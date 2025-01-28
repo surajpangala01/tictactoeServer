@@ -17,7 +17,7 @@ var upgrader = websocket.Upgrader{
 
 func main() {
 	playersQueue := queue.New()
-
+	http.HandleFunc("/", testing)
 	http.HandleFunc("/ws", handleWebSocket(playersQueue))
 
 	fmt.Println("Server starting on :8080")
@@ -26,6 +26,11 @@ func main() {
 	if err != nil {
 		fmt.Println("Error starting server", err)
 	}
+}
+
+func testing(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Welcome to my Go HTTP server!")
+
 }
 
 func handleWebSocket(playersQueue *queue.Queue) http.HandlerFunc {
@@ -44,7 +49,10 @@ func handleWebSocket(playersQueue *queue.Queue) http.HandlerFunc {
 		player := room.Player{
 			Conn: conn,
 		}
-
+		err = conn.WriteMessage(websocket.TextMessage, []byte("Hello"))
+		if err != nil {
+			fmt.Println(err)
+		}
 		playersQueue.Enqueue(player)
 
 		if playersQueue.Len() >= 2 {
